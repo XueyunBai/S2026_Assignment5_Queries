@@ -95,7 +95,9 @@ JOIN task_type tt
 ON t.taskTypeId=tt.taskTypeId
 WHERE tt.taskTypeName!='packing';
 --Q14
-SELECT i.itemDescription
+SELECT itemDescription
+FROM (
+SELECT i.itemDescription,COUNT(DISTINCT a.volunteerId) AS volunteerCount
 FROM item i
 JOIN package_contents pc
 ON i.itemId = pc.itemId
@@ -104,14 +106,18 @@ ON pc.packageId = p.packageId
 JOIN assignment a
 ON p.taskCode = a.taskCode
 GROUP BY i.itemId, i.itemDescription
-HAVING COUNT(DISTINCT a.volunteerId) < 3;
+)
+WHERE volunteerCount < 3;
 --Q15
-SELECT p.packageId, SUM(i.itemValue * pc.itemQuantity) AS totalValue
+SELECT packageId, totalValue
+FROM (
+SELECT p.packageId,SUM(i.itemValue * pc.itemQuantity) AS totalValue
 FROM package p
 JOIN package_contents pc
 ON p.packageId = pc.packageId
 JOIN item i
 ON pc.itemId = i.itemId
 GROUP BY p.packageId
-HAVING SUM(i.itemValue * pc.itemQuantity) > 100
+)
+WHERE totalValue > 100
 ORDER BY totalValue ASC;
